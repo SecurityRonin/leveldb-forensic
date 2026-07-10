@@ -6,4 +6,4 @@ allow-unwrap-in-tests = true
 allow-expect-in-tests = true
 
 # Product/format names that look like code identifiers to doc_markdown.
-doc-valid-idents = ["LevelDB", "SSTable", "WriteBatch", "crc32c", "Snappy", "WAL", "varint", "UTF-16", "Latin-1", "WebKit", "protobuf"]
+doc-valid-idents = ["LevelDB", "SSTable", "SSTables", "BlockHandle", "WriteBatch", "crc32c", "Snappy", "WAL", "varint", "value_type", "KiB", "MiB", "UTF-16", "UTF-16-LE", "Latin-1", "WebKit", "protobuf"]

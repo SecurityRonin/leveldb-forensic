@@ -6,6 +6,7 @@
 //! and must NEVER panic, abort, or over-allocate. The value-producing
 //! correctness of the reader is oracle-checked separately (see `oracle.rs`);
 //! the runtime backstop for these is the `cargo-fuzz` targets.
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 
 use std::path::Path;
 

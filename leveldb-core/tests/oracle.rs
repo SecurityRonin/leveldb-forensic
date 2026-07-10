@@ -10,6 +10,11 @@
 //!
 //! Ground truth is derivable from the documented construction: we chose the
 //! writes, and `rusty-leveldb` is an independent implementation of the writer.
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::field_reassign_with_default
+)]
 
 use std::collections::BTreeMap;
 use std::path::Path;
