@@ -18,8 +18,8 @@ use std::path::PathBuf;
 
 use leveldb_core::Record;
 use leveldb_forensic::{
-    decode_local_storage_records, decode_session_storage_records, Encoding, LocalStorageRecord,
-    SessionStorageRecord,
+    decode_local_storage, decode_local_storage_records, decode_session_storage,
+    decode_session_storage_records, Encoding, LocalStorageRecord, SessionStorageRecord,
 };
 
 fn rec(key: Vec<u8>, value: Vec<u8>, seq: u64, deleted: bool) -> Record {
@@ -262,6 +262,77 @@ fn session_storage_namespace_and_map_join() {
     );
     assert_eq!(map.2, "greeting");
     assert_eq!(map.3.text, "hello");
+}
+
+#[test]
+fn session_storage_other_key_surfaces_raw() {
+    // A key matching neither the namespace- nor map- shape must surface as
+    // Other with its raw bytes, not be dropped.
+    let recs = vec![rec(b"version".to_vec(), b"1".to_vec(), 9, false)];
+    let decoded = decode_session_storage_records(&recs);
+    assert!(
+        decoded
+            .iter()
+            .any(|r| matches!(r, SessionStorageRecord::Other { key, .. } if key == b"version")),
+        "an unrecognised session key should surface as Other"
+    );
+}
+
+fn write_oracle_db(dir: &std::path::Path, entries: &[(Vec<u8>, Vec<u8>)]) {
+    let mut o = rusty_leveldb::Options::default();
+    o.create_if_missing = true;
+    o.reuse_logs = false;
+    let mut db = rusty_leveldb::DB::open(dir, o).unwrap();
+    for (k, v) in entries {
+        db.put(k, v).unwrap();
+    }
+    db.flush().unwrap();
+}
+
+#[test]
+fn decode_local_storage_reads_a_directory() {
+    // Exercise the directory-reading convenience wrapper end to end.
+    let tmp = tempfile::tempdir().unwrap();
+    write_oracle_db(
+        tmp.path(),
+        &[(
+            ls_data_key("https://dir.example", &utf16_value("k")),
+            utf16_value("v"),
+        )],
+    );
+    let decoded = decode_local_storage(tmp.path()).unwrap();
+    assert!(
+        decoded.iter().any(|r| matches!(
+            r,
+            LocalStorageRecord::Data { script_key, value, .. }
+                if script_key.text == "k" && value.text == "v"
+        )),
+        "decode_local_storage should read + decode the directory"
+    );
+}
+
+#[test]
+fn decode_session_storage_reads_a_directory() {
+    let tmp = tempfile::tempdir().unwrap();
+    write_oracle_db(
+        tmp.path(),
+        &[
+            (
+                b"namespace-guid-https://dir.example".to_vec(),
+                b"7".to_vec(),
+            ),
+            (b"map-7-hello".to_vec(), utf16_value("world")),
+        ],
+    );
+    let decoded = decode_session_storage(tmp.path()).unwrap();
+    assert!(
+        decoded.iter().any(|r| matches!(
+            r,
+            SessionStorageRecord::Map { script_key, value, host: Some(h), .. }
+                if script_key == "hello" && value.text == "world" && h == "https://dir.example"
+        )),
+        "decode_session_storage should read + decode + host-join the directory"
+    );
 }
 
 #[test]
