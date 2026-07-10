@@ -7,6 +7,8 @@
 #![forbid(unsafe_code)]
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used))]
 
+mod render;
+
 use std::fmt;
 use std::io::Write;
 use std::path::Path;
@@ -63,12 +65,21 @@ impl std::error::Error for CliError {
 }
 
 /// Read `dir` and write every record to `out` in the chosen mode and format.
-pub fn run(
-    _dir: &Path,
-    _mode: Mode,
-    _format: Format,
-    _out: &mut dyn Write,
-) -> Result<(), CliError> {
-    // GREEN implementation lands next.
-    Ok(())
+///
+/// Reading the directory is the bootstrap: a missing or unreadable directory is
+/// a loud [`CliError::Read`], never a silent empty dump.
+pub fn run(dir: &Path, mode: Mode, format: Format, out: &mut dyn Write) -> Result<(), CliError> {
+    let records = leveldb_core::read_dir(dir).map_err(CliError::Read)?;
+    let result = match mode {
+        Mode::Raw => render::render_raw(&records, format, out),
+        Mode::Local => {
+            let decoded = leveldb_forensic::decode_local_storage_records(&records);
+            render::render_local(&decoded, format, out)
+        }
+        Mode::Session => {
+            let decoded = leveldb_forensic::decode_session_storage_records(&records);
+            render::render_session(&decoded, format, out)
+        }
+    };
+    result.map_err(CliError::Write)
 }
