@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [footer, data_block, log_record, read_dir]
+        target: [parse_table, parse_log, decode_local, decode_session]
     env:
       # cargo-fuzz builds with the host nightly; its own deps' warnings must not
       # fail the run (mirrors ci.yml's fuzz-check job).

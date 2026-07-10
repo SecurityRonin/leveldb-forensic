@@ -1,0 +1,50 @@
+[package]
+name = "leveldb-forensic-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+# Standalone workspace: cargo-fuzz builds this crate in isolation, not as a
+# member of the main workspace it fuzzes.
+[workspace]
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+arbitrary = { version = "1", features = ["derive"] }
+
+[dependencies.leveldb-core]
+path = "../leveldb-core"
+
+[dependencies.leveldb-forensic]
+path = "../leveldb-forensic"
+
+[[bin]]
+name = "parse_table"
+path = "fuzz_targets/parse_table.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "parse_log"
+path = "fuzz_targets/parse_log.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "decode_local"
+path = "fuzz_targets/decode_local.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "decode_session"
+path = "fuzz_targets/decode_session.rs"
+test = false
+doc = false
+bench = false
