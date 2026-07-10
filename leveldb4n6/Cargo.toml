@@ -25,6 +25,11 @@ leveldb-core = { workspace = true }
 leveldb-forensic = { workspace = true }
 clap = { workspace = true }
 
+[dev-dependencies]
+# Write a real LevelDB directory to drive the CLI end-to-end.
+rusty-leveldb = "4"
+tempfile = "3"
+
 [lints]
 workspace = true
 

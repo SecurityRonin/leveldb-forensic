@@ -261,6 +261,8 @@ dependencies = [
  "clap",
  "leveldb-core",
  "leveldb-forensic",
+ "rusty-leveldb",
+ "tempfile",
 ]
 
 [[package]]
