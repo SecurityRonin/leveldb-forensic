@@ -83,3 +83,19 @@ pub fn run(dir: &Path, mode: Mode, format: Format, out: &mut dyn Write) -> Resul
     };
     result.map_err(CliError::Write)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::error::Error as _;
+
+    #[test]
+    fn clierror_display_and_source_for_both_variants() {
+        let read = CliError::Read(leveldb_core::read_dir(Path::new("/no/such/dir")).unwrap_err());
+        let write = CliError::Write(std::io::Error::new(std::io::ErrorKind::BrokenPipe, "pipe"));
+        assert!(read.to_string().contains("reading LevelDB directory"));
+        assert!(write.to_string().contains("writing output"));
+        assert!(read.source().is_some());
+        assert!(write.source().is_some());
+    }
+}

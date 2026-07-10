@@ -402,3 +402,126 @@ pub(crate) fn render_session(
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use leveldb_forensic::StorageValue;
+    use std::path::PathBuf;
+
+    const FORMATS: [Format; 3] = [Format::Text, Format::Jsonl, Format::Csv];
+
+    fn sv(text: &str) -> StorageValue {
+        StorageValue {
+            text: text.to_string(),
+            raw: text.as_bytes().to_vec(),
+            encoding: Encoding::Utf16Le,
+            lossy: false,
+        }
+    }
+
+    fn to_string<F: FnOnce(&mut dyn Write) -> io::Result<()>>(f: F) -> String {
+        let mut buf: Vec<u8> = Vec::new();
+        f(&mut buf).unwrap();
+        String::from_utf8(buf).unwrap()
+    }
+
+    #[test]
+    fn render_raw_every_format() {
+        let recs = vec![Record {
+            key: b"k".to_vec(),
+            value: b"v".to_vec(),
+            seq: 1,
+            deleted: true,
+            origin_file: PathBuf::from("000005.ldb"),
+        }];
+        for fmt in FORMATS {
+            let out = to_string(|w| render_raw(&recs, fmt, w));
+            assert!(out.contains("6b"), "{fmt:?} key hex: {out}"); // 'k'
+            assert!(out.contains("76"), "{fmt:?} value hex: {out}"); // 'v'
+        }
+    }
+
+    #[test]
+    fn render_local_every_variant_and_format() {
+        // Meta with and without a declared size (covers the size map_or_else
+        // arms), a Data record, and an Other record — across all three formats.
+        let recs = vec![
+            LocalStorageRecord::Meta {
+                origin: "https://o".into(),
+                timestamp_webkit_micros: 42,
+                size: Some(4096),
+                seq: 1,
+                deleted: false,
+            },
+            LocalStorageRecord::Meta {
+                origin: "https://o2".into(),
+                timestamp_webkit_micros: 7,
+                size: None,
+                seq: 2,
+                deleted: true,
+            },
+            LocalStorageRecord::Data {
+                origin: "https://o".into(),
+                script_key: sv("the\tme"), // tab exercises the oneline flattening
+                value: sv("dark"),
+                seq: 3,
+                deleted: false,
+            },
+            LocalStorageRecord::Other {
+                key: b"VERSION".to_vec(),
+                seq: 4,
+                deleted: false,
+            },
+        ];
+        for fmt in FORMATS {
+            let out = to_string(|w| render_local(&recs, fmt, w));
+            assert!(out.contains("dark"), "{fmt:?} data value: {out}");
+            assert!(out.contains("4096"), "{fmt:?} meta size: {out}");
+            assert!(
+                out.contains("56455253494f4e"),
+                "{fmt:?} other key hex: {out}"
+            );
+        }
+    }
+
+    #[test]
+    fn render_session_every_variant_and_format() {
+        let recs = vec![
+            SessionStorageRecord::Namespace {
+                guid: "g".into(),
+                host: "https://h".into(),
+                map_id: "7".into(),
+                seq: 1,
+                deleted: false,
+            },
+            SessionStorageRecord::Map {
+                map_id: "7".into(),
+                host: Some("https://h".into()),
+                script_key: "greet".into(),
+                value: sv("hi"),
+                seq: 2,
+                deleted: false,
+            },
+            SessionStorageRecord::Map {
+                map_id: "9".into(),
+                host: None, // orphan map: covers the host-None rendering arms
+                script_key: "orphan".into(),
+                value: sv("x"),
+                seq: 3,
+                deleted: false,
+            },
+            SessionStorageRecord::Other {
+                key: b"weird".to_vec(),
+                seq: 4,
+                deleted: false,
+            },
+        ];
+        for fmt in FORMATS {
+            let out = to_string(|w| render_session(&recs, fmt, w));
+            assert!(out.contains("greet"), "{fmt:?} map key: {out}");
+            assert!(out.contains("orphan"), "{fmt:?} orphan map: {out}");
+            assert!(out.contains("77656972"), "{fmt:?} other key hex: {out}"); // 'weir'
+        }
+    }
+}
