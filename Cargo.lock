@@ -250,6 +250,8 @@ name = "leveldb-forensic"
 version = "0.1.0"
 dependencies = [
  "leveldb-core",
+ "rusty-leveldb",
+ "tempfile",
 ]
 
 [[package]]
