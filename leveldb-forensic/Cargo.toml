@@ -1,0 +1,20 @@
+[package]
+name = "leveldb-forensic"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+# Published library: a deliberately LOW, CI-verified MSRV (see leveldb-core).
+rust-version = "1.80"
+readme = "README.md"
+description = "Chrome/Chromium Local Storage and Session Storage decoder built on leveldb-core — decodes type-prefixed values (UTF-16-LE / Latin-1), surfaces malformed values without panicking, and iterates every record including tombstones and orphans."
+repository = "https://github.com/SecurityRonin/leveldb-forensic"
+
+[lib]
+name = "leveldb_forensic"
+path = "src/lib.rs"
+
+[dependencies]
+leveldb-core = { workspace = true }
+
+[lints]
+workspace = true

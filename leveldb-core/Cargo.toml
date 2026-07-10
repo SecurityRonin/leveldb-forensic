@@ -1,0 +1,31 @@
+[package]
+name = "leveldb-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+# Published library: a deliberately LOW, CI-verified MSRV (a compatibility signal),
+# distinct from the dev toolchain pin in rust-toolchain.toml. Raise only when a
+# newer-Rust feature is genuinely needed.
+rust-version = "1.80"
+readme = "README.md"
+description = "Pure-Rust, read-only, panic-free LevelDB record reader for forensics — enumerates every raw SSTable (.ldb) and WAL (.log) record including tombstones and superseded versions, without taking the LOCK or mutating the directory."
+repository = "https://github.com/SecurityRonin/leveldb-forensic"
+
+[lib]
+name = "leveldb_core"
+path = "src/lib.rs"
+
+[dependencies]
+integer-encoding = { workspace = true }
+crc32c = { workspace = true }
+snap = { workspace = true }
+
+[dev-dependencies]
+# Independent oracle (Doer-Checker): a pure-Rust reimplementation of LevelDB used
+# only in tests to WRITE real .ldb/.log files, then read them back with our reader
+# and confirm live records match while superseded/deleted records also surface.
+rusty-leveldb = "4"
+tempfile = "3"
+
+[lints]
+workspace = true

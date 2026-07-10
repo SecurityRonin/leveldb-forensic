@@ -1,0 +1,44 @@
+[package]
+name = "leveldb4n6"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+# Application crate: declare the pinned dev toolchain as MSRV (nothing pins a
+# library dependency against the binary), unlike the published libs' low floor.
+rust-version = "1.96"
+# `authors` is required by cargo-deb (it derives the .deb copyright from it).
+authors = ["Albert Hui <albert@securityronin.com>"]
+readme = "README.md"
+description = "leveldb4n6 — read-only LevelDB forensic CLI: dump raw records (with tombstones and sequence numbers) or decoded Chrome Local/Session Storage as text, JSONL, or CSV."
+repository = "https://github.com/SecurityRonin/leveldb-forensic"
+
+[lib]
+name = "leveldb4n6"
+path = "src/lib.rs"
+
+[[bin]]
+name = "leveldb4n6"
+path = "src/main.rs"
+
+[dependencies]
+leveldb-core = { workspace = true }
+leveldb-forensic = { workspace = true }
+clap = { workspace = true }
+
+[lints]
+workspace = true
+
+# Debian package (.deb) metadata for the release workflow.
+[package.metadata.deb]
+maintainer = "SecurityRonin <security-ronin@users.noreply.github.com>"
+section = "utils"
+priority = "optional"
+extended-description = """\
+leveldb4n6 is a read-only LevelDB forensic CLI. It enumerates every raw record \
+from a LevelDB directory — including tombstones and superseded versions the \
+normal merged database view hides — and decodes Chrome/Chromium Local Storage \
+and Session Storage. It never takes the database LOCK and never writes the \
+directory."""
+assets = [
+    ["target/release/leveldb4n6", "usr/bin/", "755"],
+]
