@@ -92,13 +92,11 @@ impl<'a> Cursor<'a> {
                 offset,
             });
         }
-        // `len <= remaining` fits in usize on every supported platform.
-        let len = usize::try_from(len).map_err(|_| Error::LengthOutOfRange {
-            what,
-            value: len,
-            available,
-            offset,
-        })?;
+        // `len <= available`, and `available` is `remaining()` (a `usize`) widened
+        // to `u64`, so `len` always fits back into `usize` — the cast cannot lose
+        // bits on any pointer width. (An infallible cast, not a fallible convert,
+        // so there is no dead error arm to test.)
+        let len = len as usize;
         self.take(len, what)
     }
 }

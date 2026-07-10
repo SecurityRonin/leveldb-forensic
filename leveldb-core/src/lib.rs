@@ -50,11 +50,19 @@ pub fn read_dir(dir: &Path) -> Result<Vec<Record>, Error> {
     // Deterministic order so records read back in a stable sequence.
     let mut paths: Vec<std::path::PathBuf> = Vec::new();
     for entry in entries {
-        let entry = entry.map_err(|e| Error::Io {
-            path: dir.to_path_buf(),
-            source: e,
-        })?;
-        paths.push(entry.path());
+        // A per-entry iteration error means the directory bootstrap is
+        // compromised, so surface it loudly rather than silently truncating the
+        // listing. (A match, not a closure, keeps this a defensive line rather
+        // than a separately-counted function.)
+        match entry {
+            Ok(e) => paths.push(e.path()),
+            Err(e) => {
+                return Err(Error::Io {
+                    path: dir.to_path_buf(),
+                    source: e,
+                })
+            }
+        }
     }
     paths.sort();
 
