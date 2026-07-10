@@ -126,3 +126,76 @@ impl std::error::Error for Error {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::error::Error as _;
+
+    #[test]
+    fn display_shows_the_offending_value_and_offset_for_every_variant() {
+        // Each message must carry the value/offset so an "invalid X" is not a
+        // dead end (fail-loud, show-the-value discipline).
+        let cases: Vec<(Error, &[&str])> = vec![
+            (
+                Error::UnexpectedEof {
+                    what: "footer",
+                    offset: 7,
+                },
+                &["footer", "7"],
+            ),
+            (Error::BadVarint { offset: 3 }, &["varint", "3"]),
+            (
+                Error::LengthOutOfRange {
+                    what: "key",
+                    value: 99,
+                    available: 4,
+                    offset: 12,
+                },
+                &["key", "99", "4", "12"],
+            ),
+            (
+                Error::BadTableMagic {
+                    found: [0xde, 0xad, 0xbe, 0xef, 0, 0, 0, 0],
+                    offset: 40,
+                },
+                &["magic", "de", "40"],
+            ),
+            (
+                Error::BadBlockCrc {
+                    stored: 0x1111_1111,
+                    computed: 0x2222_2222,
+                    offset: 64,
+                },
+                &["crc", "0x11111111", "0x22222222", "64"],
+            ),
+            (
+                Error::UnknownCompression { kind: 9, offset: 5 },
+                &["compression", "9", "5"],
+            ),
+            (
+                Error::Io {
+                    path: PathBuf::from("/tmp/x.ldb"),
+                    source: std::io::Error::new(std::io::ErrorKind::NotFound, "missing"),
+                },
+                &["/tmp/x.ldb", "missing"],
+            ),
+        ];
+        for (err, needles) in cases {
+            let msg = err.to_string();
+            for n in needles {
+                assert!(msg.contains(n), "{msg:?} should contain {n:?}");
+            }
+        }
+    }
+
+    #[test]
+    fn source_is_the_inner_io_error_only_for_io() {
+        let io = Error::Io {
+            path: PathBuf::from("p"),
+            source: std::io::Error::new(std::io::ErrorKind::PermissionDenied, "nope"),
+        };
+        assert!(io.source().is_some());
+        assert!(Error::BadVarint { offset: 0 }.source().is_none());
+    }
+}
