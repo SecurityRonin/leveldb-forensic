@@ -7,7 +7,7 @@
 //! raw bytes, never dropped or panicked on. Iterates **every** record, including
 //! tombstones and orphaned entries.
 //!
-//! Reference: cclgroupltd/ccl_chromium_reader (`ccl_chromium_localstorage.py`,
+//! Reference: `cclgroupltd/ccl_chromium_reader` (`ccl_chromium_localstorage.py`,
 //! `ccl_chromium_sessionstorage.py`).
 #![forbid(unsafe_code)]
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used))]
@@ -24,9 +24,8 @@ use leveldb_core::Record;
 use std::path::Path;
 
 /// Decode Local Storage records from raw LevelDB [`Record`]s.
-pub fn decode_local_storage_records(_records: &[Record]) -> Vec<LocalStorageRecord> {
-    // GREEN implementation lands next.
-    Vec::new()
+pub fn decode_local_storage_records(records: &[Record]) -> Vec<LocalStorageRecord> {
+    localstorage::decode(records)
 }
 
 /// Read a `Local Storage/leveldb` directory and decode its records.
@@ -36,9 +35,8 @@ pub fn decode_local_storage(dir: &Path) -> Result<Vec<LocalStorageRecord>, level
 }
 
 /// Decode Session Storage records from raw LevelDB [`Record`]s.
-pub fn decode_session_storage_records(_records: &[Record]) -> Vec<SessionStorageRecord> {
-    // GREEN implementation lands next.
-    Vec::new()
+pub fn decode_session_storage_records(records: &[Record]) -> Vec<SessionStorageRecord> {
+    sessionstorage::decode(records)
 }
 
 /// Read a `Session Storage` directory and decode its records.

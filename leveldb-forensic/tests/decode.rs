@@ -8,7 +8,11 @@
 //!    proving the whole `read_dir` -> decode pipeline (the LevelDB layer is
 //!    oracle-backed; the decoded string's ground truth is derivable from how the
 //!    value was encoded).
-#![allow(clippy::unwrap_used, clippy::expect_used)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::field_reassign_with_default
+)]
 
 use std::path::PathBuf;
 
