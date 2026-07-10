@@ -119,6 +119,36 @@ fn session_jsonl_decodes_and_joins_host() {
 }
 
 #[test]
+fn binary_dumps_a_directory_and_exits_success() {
+    // Run the actual compiled binary so `main` (the humble-object shell) is
+    // exercised, not just the library `run`.
+    let tmp = tempfile::tempdir().unwrap();
+    write_db(tmp.path(), &[(b"a", Some(b"b"))]);
+    let out = std::process::Command::new(env!("CARGO_BIN_EXE_leveldb4n6"))
+        .args(["dump", tmp.path().to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(out.status.success(), "binary should exit 0 on a valid dir");
+    assert!(
+        String::from_utf8_lossy(&out.stdout).contains("61"),
+        "expected hex key in stdout"
+    );
+}
+
+#[test]
+fn binary_reports_a_missing_directory_and_exits_failure() {
+    let out = std::process::Command::new(env!("CARGO_BIN_EXE_leveldb4n6"))
+        .args(["dump", "/no/such/leveldb/dir"])
+        .output()
+        .unwrap();
+    assert!(!out.status.success(), "binary should exit non-zero");
+    assert!(
+        String::from_utf8_lossy(&out.stderr).contains("leveldb4n6:"),
+        "error should be reported loudly on stderr"
+    );
+}
+
+#[test]
 fn missing_directory_is_a_loud_error() {
     let mut buf: Vec<u8> = Vec::new();
     let err = run(
