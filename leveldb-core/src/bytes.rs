@@ -100,3 +100,46 @@ impl<'a> Cursor<'a> {
         self.take(len, what)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn read_varint_u32_overflows_on_a_too_large_value() {
+        // A varint encoding a value > u32::MAX must error (the map_err arm),
+        // not truncate silently.
+        let mut cur = Cursor::new(&[0xff, 0xff, 0xff, 0xff, 0x1f]); // 0x1_ffff_ffff
+        assert!(matches!(
+            cur.read_varint_u32(),
+            Err(Error::BadVarint { offset: 0 })
+        ));
+    }
+
+    #[test]
+    fn read_varint_u32_accepts_an_in_range_value() {
+        let mut cur = Cursor::new(&[0xac, 0x02]); // 300
+        assert_eq!(cur.read_varint_u32().unwrap(), 300);
+    }
+
+    #[test]
+    fn read_length_prefixed_rejects_a_lying_length() {
+        // Length prefix (varint) 200 but only a few bytes remain.
+        let mut cur = Cursor::new(&[0xc8, 0x01, 0xaa, 0xbb]); // len=200, 2 body bytes
+        assert!(matches!(
+            cur.read_length_prefixed("x"),
+            Err(Error::LengthOutOfRange {
+                value: 200,
+                available: 2,
+                ..
+            })
+        ));
+    }
+
+    #[test]
+    fn read_length_prefixed_reads_the_exact_body() {
+        let mut cur = Cursor::new(&[0x03, b'a', b'b', b'c', b'z']);
+        assert_eq!(cur.read_length_prefixed("x").unwrap(), b"abc");
+        assert_eq!(cur.remaining(), 1);
+    }
+}

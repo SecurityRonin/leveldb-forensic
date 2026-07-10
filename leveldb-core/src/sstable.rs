@@ -286,3 +286,61 @@ pub(crate) fn parse_table(buf: &[u8], origin: &Path) -> Result<Vec<Record>, Erro
     }
     Ok(records)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Wrap `data` as a Snappy-typed block with a *valid* trailer crc, so the
+    /// crc check passes and the Snappy decode path (not the crc guard) is what
+    /// runs on the crafted, undecodable payload.
+    fn snappy_block(data: &[u8]) -> Vec<u8> {
+        let mut region = data.to_vec();
+        region.push(COMPRESSION_SNAPPY);
+        let crc = mask_crc(crc32c::crc32c(&region));
+        region.extend_from_slice(&crc.to_le_bytes());
+        region
+    }
+
+    #[test]
+    fn read_block_errors_on_undecodable_snappy_length() {
+        // An incomplete Snappy varint length: `decompress_len` fails.
+        let data = [0xffu8, 0xff];
+        let buf = snappy_block(&data);
+        let handle = BlockHandle {
+            offset: 0,
+            size: data.len() as u64,
+        };
+        assert!(read_block(&buf, handle).is_err());
+    }
+
+    #[test]
+    fn read_block_errors_on_truncated_snappy_body() {
+        // A valid length prefix (5) but no compressed body: `decompress_vec` fails.
+        let data = [0x05u8];
+        let buf = snappy_block(&data);
+        let handle = BlockHandle {
+            offset: 0,
+            size: data.len() as u64,
+        };
+        assert!(read_block(&buf, handle).is_err());
+    }
+
+    #[test]
+    fn read_block_rejects_an_unknown_compression_type() {
+        // Type byte 2 is neither none (0) nor Snappy (1).
+        let data = [0x01u8, 0x02, 0x03];
+        let mut region = data.to_vec();
+        region.push(2); // unknown compression type
+        let crc = mask_crc(crc32c::crc32c(&region));
+        region.extend_from_slice(&crc.to_le_bytes());
+        let handle = BlockHandle {
+            offset: 0,
+            size: data.len() as u64,
+        };
+        assert!(matches!(
+            read_block(&region, handle),
+            Err(Error::UnknownCompression { kind: 2, .. })
+        ));
+    }
+}
