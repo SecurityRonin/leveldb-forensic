@@ -15,6 +15,7 @@ path = "src/lib.rs"
 
 [dependencies]
 leveldb-core = { workspace = true }
+protobuf-forensic-core = { workspace = true }
 
 [dev-dependencies]
 # Same independent oracle used by leveldb-core: write real Chrome-shaped

@@ -236,7 +236,7 @@ checksum = "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695"
 
 [[package]]
 name = "leveldb-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "crc32c",
  "integer-encoding 4.1.0",
@@ -247,16 +247,17 @@ dependencies = [
 
 [[package]]
 name = "leveldb-forensic"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "leveldb-core",
+ "protobuf-forensic-core",
  "rusty-leveldb",
  "tempfile",
 ]
 
 [[package]]
 name = "leveldb4n6"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clap",
  "leveldb-core",
@@ -306,6 +307,12 @@ checksum = "8fd00f0bb2e90d81d1044c2b32617f68fcb9fa3bb7640c23e9c748e53fb30934"
 dependencies = [
  "unicode-ident",
 ]
+
+[[package]]
+name = "protobuf-forensic-core"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0aabbbef946643dddc53afc57614b7c15d9c25d8ebfd141b3efd3d6f893f2566"
 
 [[package]]
 name = "quote"

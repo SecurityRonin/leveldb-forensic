@@ -9,6 +9,7 @@
 
 use crate::value::{decode_type_prefixed, StorageValue};
 use leveldb_core::Record;
+use protobuf_forensic_core::FieldValue;
 
 const META_PREFIX: &[u8] = b"META:";
 
@@ -59,45 +60,28 @@ fn latin1(raw: &[u8]) -> String {
     raw.iter().map(|&b| b as char).collect()
 }
 
-/// Read a LEB128 varint at `start`. Returns the value and bytes consumed, or
-/// `None` if truncated or overlong. Bounds-checked; never panics.
-fn read_varint(data: &[u8], start: usize) -> Option<(u64, usize)> {
-    let mut result: u64 = 0;
-    let mut shift: u32 = 0;
-    let mut i = start;
-    while let Some(&byte) = data.get(i) {
-        if shift >= 64 {
-            return None; // overlong for u64
-        }
-        result |= u64::from(byte & 0x7f) << shift;
-        i += 1;
-        if byte & 0x80 == 0 {
-            return Some((result, i - start));
-        }
-        shift += 7;
-    }
-    None
-}
-
-/// Parse the `StorageMetadata` protobuf: field 1 (tag `0x08`) is the WebKit-µs
-/// timestamp varint; optional field 2 (tag `0x10`) is the size varint.
+/// Parse the `StorageMetadata` protobuf: field 1 is the WebKit-µs timestamp
+/// varint; optional field 2 is the size varint. Returns `None` unless the payload
+/// is a well-formed protobuf whose first field is the field-1 timestamp varint.
 fn parse_meta_protobuf(data: &[u8]) -> Option<(u64, Option<u64>)> {
-    let (tag1, n) = read_varint(data, 0)?;
-    if tag1 != 0x08 {
-        return None;
-    }
-    let (timestamp, n2) = read_varint(data, n)?;
-    let pos = n + n2;
-
-    // Optional field 2 (tag 0x10): the declared size in bytes.
-    let mut size = None;
-    if let Some((tag2, tn)) = read_varint(data, pos) {
-        if tag2 == 0x10 {
-            if let Some((sz, _)) = read_varint(data, pos + tn) {
-                size = Some(sz);
-            }
-        }
-    }
+    let fields = protobuf_forensic_core::decode(data).ok()?;
+    // Field 1 (the timestamp) must be present and first, as Chrome writes it.
+    let timestamp = match fields.first()? {
+        f if f.number == 1 => match f.value {
+            FieldValue::Varint(v) => v,
+            _ => return None,
+        },
+        _ => return None,
+    };
+    // Optional field 2 (the declared size), when it is the immediately-following
+    // varint — matching the original single-pass reader.
+    let size = match fields.get(1) {
+        Some(f) if f.number == 2 => match f.value {
+            FieldValue::Varint(v) => Some(v),
+            _ => None,
+        },
+        _ => None,
+    };
     Some((timestamp, size))
 }
 

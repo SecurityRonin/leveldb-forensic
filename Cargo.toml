@@ -5,17 +5,19 @@ members = ["leveldb-core", "leveldb-forensic", "leveldb4n6"]
 # Single source of truth for fields shared by every member (DRY): bump version /
 # edition / license here once; members inherit via `field.workspace = true`.
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "Apache-2.0"
 
 [workspace.dependencies]
 # The raw record reader, consumed by the Chrome storage decoder and the CLI.
-leveldb-core = { version = "0.1.0", path = "leveldb-core" }
+leveldb-core = { version = "0.1.1", path = "leveldb-core" }
 # The Chrome Local/Session Storage decoder, consumed by the leveldb4n6 CLI.
-leveldb-forensic = { version = "0.1.0", path = "leveldb-forensic" }
+leveldb-forensic = { version = "0.1.1", path = "leveldb-forensic" }
 # Pure-Rust LEB128 varints (LevelDB's on-disk integer encoding).
 integer-encoding = "4"
+# Schemaless protobuf wire-format decoder for the Local Storage `META:` record.
+protobuf-forensic-core = "0.1"
 # crc32c (masked) verification of SSTable block trailers and log records.
 crc32c = "0.6"
 # Snappy block decompression (LevelDB compression type 1).
