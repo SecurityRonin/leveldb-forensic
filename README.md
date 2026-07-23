@@ -46,7 +46,7 @@ Both are read without opening the database, so an active browser's `LOCK` is nev
 
 ## Three crates
 
-- **`leveldb-core`** — the pure-Rust, `#![forbid(unsafe_code)]`, panic-free raw reader. `read_dir(path) -> Vec<Record>`.
+- **`leveldb-core`** — the pure-Rust, `#![forbid(unsafe_code)]`, panic-free-by-lint raw reader. `read_dir(path) -> Vec<Record>`.
 - **`leveldb-forensic`** — Chrome/Chromium Local Storage and Session Storage decoding on top of `leveldb-core` records.
 - **`leveldb4n6`** — the read-only CLI.
 

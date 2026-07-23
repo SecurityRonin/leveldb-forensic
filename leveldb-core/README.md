@@ -1,6 +1,6 @@
 # leveldb-core
 
-Pure-Rust, read-only, panic-free **LevelDB record reader** for forensics.
+Pure-Rust, read-only, input-fuzzed **LevelDB record reader** for forensics.
 
 Enumerates every raw record from an existing LevelDB directory — all `.ldb`
 SSTables and `.log` write-ahead logs — **without taking the `LOCK` and without
