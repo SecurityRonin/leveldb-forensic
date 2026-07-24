@@ -1,0 +1,222 @@
+
+# cargo-vet config file
+
+[cargo-vet]
+version = "0.10"
+
+[imports.bytecode-alliance]
+url = "https://raw.githubusercontent.com/bytecodealliance/wasmtime/main/supply-chain/audits.toml"
+
+[imports.embark]
+url = "https://raw.githubusercontent.com/EmbarkStudios/rust-ecosystem/main/audits.toml"
+
+[imports.google]
+url = "https://raw.githubusercontent.com/google/rust-crate-audits/main/audits.toml"
+
+[imports.mozilla]
+url = "https://raw.githubusercontent.com/mozilla/supply-chain/main/audits.toml"
+
+[policy.leveldb-core]
+audit-as-crates-io = true
+
+[policy.leveldb-forensic]
+audit-as-crates-io = true
+
+[policy.leveldb4n6]
+audit-as-crates-io = true
+
+[[exemptions.anstream]]
+version = "1.0.0"
+criteria = "safe-to-deploy"
+
+[[exemptions.anstyle]]
+version = "1.0.14"
+criteria = "safe-to-deploy"
+
+[[exemptions.anstyle-parse]]
+version = "1.0.0"
+criteria = "safe-to-deploy"
+
+[[exemptions.anstyle-query]]
+version = "1.1.5"
+criteria = "safe-to-deploy"
+
+[[exemptions.anstyle-wincon]]
+version = "3.0.11"
+criteria = "safe-to-deploy"
+
+[[exemptions.bitflags]]
+version = "2.13.0"
+criteria = "safe-to-run"
+
+[[exemptions.bytes]]
+version = "1.12.1"
+criteria = "safe-to-run"
+
+[[exemptions.cc]]
+version = "1.2.66"
+criteria = "safe-to-run"
+
+[[exemptions.cfg-if]]
+version = "1.0.4"
+criteria = "safe-to-run"
+
+[[exemptions.clap]]
+version = "4.6.1"
+criteria = "safe-to-deploy"
+
+[[exemptions.clap_builder]]
+version = "4.6.0"
+criteria = "safe-to-deploy"
+
+[[exemptions.clap_derive]]
+version = "4.6.1"
+criteria = "safe-to-deploy"
+
+[[exemptions.clap_lex]]
+version = "1.1.0"
+criteria = "safe-to-deploy"
+
+[[exemptions.colorchoice]]
+version = "1.0.5"
+criteria = "safe-to-deploy"
+
+[[exemptions.crc32c]]
+version = "0.6.8"
+criteria = "safe-to-deploy"
+
+[[exemptions.errno]]
+version = "0.3.14"
+criteria = "safe-to-run"
+
+[[exemptions.fastrand]]
+version = "2.4.1"
+criteria = "safe-to-run"
+
+[[exemptions.find-msvc-tools]]
+version = "0.1.9"
+criteria = "safe-to-run"
+
+[[exemptions.fs2]]
+version = "0.4.3"
+criteria = "safe-to-run"
+
+[[exemptions.getrandom]]
+version = "0.2.17"
+criteria = "safe-to-run"
+
+[[exemptions.getrandom]]
+version = "0.4.3"
+criteria = "safe-to-run"
+
+[[exemptions.integer-encoding]]
+version = "3.0.4"
+criteria = "safe-to-run"
+
+[[exemptions.integer-encoding]]
+version = "4.1.0"
+criteria = "safe-to-deploy"
+
+[[exemptions.is_terminal_polyfill]]
+version = "1.70.2"
+criteria = "safe-to-deploy"
+
+[[exemptions.leveldb-core]]
+version = "0.1.1"
+criteria = "safe-to-deploy"
+
+[[exemptions.leveldb-forensic]]
+version = "0.1.1"
+criteria = "safe-to-deploy"
+
+[[exemptions.leveldb4n6]]
+version = "0.1.1"
+criteria = "safe-to-deploy"
+
+[[exemptions.libc]]
+version = "0.2.186"
+criteria = "safe-to-run"
+
+[[exemptions.linux-raw-sys]]
+version = "0.12.1"
+criteria = "safe-to-run"
+
+[[exemptions.once_cell]]
+version = "1.21.4"
+criteria = "safe-to-run"
+
+[[exemptions.once_cell_polyfill]]
+version = "1.70.2"
+criteria = "safe-to-deploy"
+
+[[exemptions.protobuf-forensic-core]]
+version = "0.1.0"
+criteria = "safe-to-deploy"
+
+[[exemptions.quote]]
+version = "1.0.46"
+criteria = "safe-to-deploy"
+
+[[exemptions.r-efi]]
+version = "6.0.0"
+criteria = "safe-to-run"
+
+[[exemptions.rustc_version]]
+version = "0.4.1"
+criteria = "safe-to-deploy"
+
+[[exemptions.rustix]]
+version = "1.1.4"
+criteria = "safe-to-run"
+
+[[exemptions.rusty-leveldb]]
+version = "4.0.1"
+criteria = "safe-to-run"
+
+[[exemptions.semver]]
+version = "1.0.28"
+criteria = "safe-to-deploy"
+
+[[exemptions.shlex]]
+version = "2.0.1"
+criteria = "safe-to-run"
+
+[[exemptions.snap]]
+version = "1.1.1"
+criteria = "safe-to-deploy"
+
+[[exemptions.syn]]
+version = "2.0.118"
+criteria = "safe-to-deploy"
+
+[[exemptions.unicode-ident]]
+version = "1.0.24"
+criteria = "safe-to-deploy"
+
+[[exemptions.wasi]]
+version = "0.11.1+wasi-snapshot-preview1"
+criteria = "safe-to-run"
+
+[[exemptions.winapi-i686-pc-windows-gnu]]
+version = "0.4.0"
+criteria = "safe-to-run"
+
+[[exemptions.winapi-x86_64-pc-windows-gnu]]
+version = "0.4.0"
+criteria = "safe-to-run"
+
+[[exemptions.windows-link]]
+version = "0.2.1"
+criteria = "safe-to-deploy"
+
+[[exemptions.windows-sys]]
+version = "0.61.2"
+criteria = "safe-to-deploy"
+
+[[exemptions.zerocopy]]
+version = "0.8.54"
+criteria = "safe-to-run"
+
+[[exemptions.zerocopy-derive]]
+version = "0.8.54"
+criteria = "safe-to-run"
