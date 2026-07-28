@@ -151,9 +151,7 @@ fn differential_matches_ccl_chromium_reader() {
         return;
     }
 
-    let dir = std::env::var_os("CCL_LEVELDB_DIR")
-        .map(PathBuf::from)
-        .unwrap_or_else(default_fixture_dir);
+    let dir = std::env::var_os("CCL_LEVELDB_DIR").map_or_else(default_fixture_dir, PathBuf::from);
     assert!(
         dir.is_dir(),
         "CCL_LEVELDB_DIR / fixture is not a directory: {}",

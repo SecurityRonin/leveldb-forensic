@@ -56,7 +56,7 @@ The runtime backstop is `cargo-fuzz` (`fuzz/`): four "must not panic" targets �
 executed 7.1M / 2.9M / 0.7M / 1.9M cases respectively with no crashes and bounded
 memory; `fuzz.yml` runs them on a weekly schedule.
 
-## `leveldb-forensic` — Chrome storage decode (tier 2/3)
+## `leveldb-forensic` — Chrome storage decode (tier 1/2/3)
 
 The decoders are validated two ways (`leveldb-forensic/tests/decode.rs`):
 
@@ -88,10 +88,44 @@ The decoders are validated two ways (`leveldb-forensic/tests/decode.rs`):
 The value/key **format definitions** are taken from
 [`cclgroupltd/ccl_chromium_reader`](https://github.com/cclgroupltd/ccl_chromium_reader)
 (`ccl_chromium_localstorage.py`, `ccl_chromium_sessionstorage.py`). The decode
-layer is now confirmed against a **real Chrome profile** (above), closing the
-"live profile" gap for Local Storage; a full **differential** cross-check against
-`ccl_chromium_reader` (the Python reader) on a large real-world profile remains
-the tier-1 follow-up.
+layer is confirmed against a **real Chrome profile** (above), closing the "live
+profile" gap for Local Storage.
+
+- **Differential against `ccl_chromium_reader` (tier 1)** — the two prior bullets
+  grade our decode against ground truth *we* documented (construction-derived,
+  tier 2). `leveldb-forensic/tests/differential_ccl.rs` closes the tier-1 gap: it
+  runs the **independent third-party** Python reader
+  [`cclgroupltd/ccl_chromium_reader`](https://github.com/cclgroupltd/ccl_chromium_reader)
+  over the *same* on-disk bytes and reconciles the two decoders' *live* views —
+  the `(origin, script_key, value)` triple set and the metadata-origin set must
+  agree. Two independent implementations agreeing on real Chromium output is
+  tier-1 evidence: the answer key is authored by someone else, not by us (it
+  breaks the circular-validation risk that a self-authored fixture carries).
+
+  The test is **env-gated so CI stays green without the oracle**, and fails loud
+  when the oracle is asserted-present but broken (a bootstrap failure, never a
+  silent skip):
+
+  | env var | role |
+  |---|---|
+  | `CCL_LEVELDB_ORACLE` | path to a Python interpreter that can `import ccl_chromium_reader`; **unset ⇒ the test skips cleanly** |
+  | `CCL_LEVELDB_DIR` | optional — a *larger* real Chromium `Local Storage/leveldb` dir; defaults to the committed fixture (D13) |
+
+  ```
+  python3 -m venv /tmp/ccl-venv
+  /tmp/ccl-venv/bin/pip install \
+      "git+https://github.com/cclgroupltd/ccl_chromium_reader.git"
+  CCL_LEVELDB_ORACLE=/tmp/ccl-venv/bin/python \
+      cargo test -p leveldb-forensic --test differential_ccl
+  ```
+
+  The bundled driver `leveldb-forensic/tests/ccl_oracle.py` invokes the oracle
+  and emits its live records for the Rust side to reconcile. Reconciled clean
+  against the committed real-Chromium fixture: the four documented writes
+  (`case_id`, `greeting`, `count`, `unicode`) and the origin
+  `http://127.0.0.1:8117` match ccl exactly. Pointing `CCL_LEVELDB_DIR` at a
+  larger flushed profile widens the corpus (and would exercise a
+  Chromium-authored SSTable — see the edge case below).
 
 ## Known edge cases not yet validated against an oracle
 

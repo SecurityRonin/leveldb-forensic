@@ -16,10 +16,13 @@ whose ground truth is derivable from documented construction.
 A **real Chromium-authored** Local Storage `leveldb` store, minted on this host
 by driving a genuine Google Chrome to a page that runs four known
 `localStorage.setItem` writes. The bytes are real Chrome output; the ground
-truth is the four documented writes. Consumed by
-`leveldb-forensic/tests/real_chromium_local_storage.rs`, which decodes the
-directory with `decode_local_storage` and asserts each write plus the origin
-`META:` record — the tier-1/2 real-profile follow-up called out in
+truth is the four documented writes. Consumed by two tests:
+`leveldb-forensic/tests/real_chromium_local_storage.rs` decodes the directory
+with `decode_local_storage` and asserts each write plus the origin `META:`
+record (tier 2, construction-derived); and
+`leveldb-forensic/tests/differential_ccl.rs` reconciles our decode against the
+independent Python oracle `cclgroupltd/ccl_chromium_reader` over these same bytes
+(tier 1, env-gated on `CCL_LEVELDB_ORACLE`) — see
 [`docs/validation.md`](../../docs/validation.md).
 
 - **Source:** self-minted with Google Chrome 150.0.7871.187 (macOS, aarch64),
