@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>ldb-mint</title></head>
+<body>
+<script>
+// Known ground-truth writes. These localStorage.setItem calls are the
+// documented construction whose output Chromium persists to leveldb.
+localStorage.setItem("case_id", "CASE-001");
+localStorage.setItem("greeting", "Hello, forensics!");
+localStorage.setItem("unicode", "日本語 café ☕");
+localStorage.setItem("count", "42");
+document.title = "ldb-mint-done";
+</script>
+Minted.
+</body>
+</html>

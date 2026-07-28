@@ -71,17 +71,36 @@ The decoders are validated two ways (`leveldb-forensic/tests/decode.rs`):
   panic), the `META:` protobuf (timestamp + size), `VERSION` → `Other`, and the
   Session Storage `namespace-`↔`map-` host join.
 
+- **Real Chromium-authored fixture (tier 2)** — a genuine Google Chrome
+  (150.0.7871.187, headless) was driven to a page running four known
+  `localStorage.setItem` writes; its `Local Storage/leveldb` directory is
+  committed at `tests/data/chromium-local-storage/leveldb`.
+  `leveldb-forensic/tests/real_chromium_local_storage.rs` decodes the directory
+  with `decode_local_storage` and asserts each write with its origin, value, and
+  Chromium-chosen encoding (Latin-1 for the ASCII values, UTF-16-LE for the
+  non-Latin-1 `unicode` value), plus the origin `META:` record. The bytes are
+  real Chrome output; the ground truth is the four documented writes — tier 2
+  (real engine output, construction-derived ground truth). Provenance and the
+  reproducible mint command are in
+  [`tests/data/README.md`](../tests/data/README.md) (`mint.sh`) and the fleet
+  catalog (entry **D13**).
+
 The value/key **format definitions** are taken from
 [`cclgroupltd/ccl_chromium_reader`](https://github.com/cclgroupltd/ccl_chromium_reader)
-(`ccl_chromium_localstorage.py`, `ccl_chromium_sessionstorage.py`). This decode
-layer is **not** differentially compared against `ccl_chromium_reader` running on
-a real Chrome profile — that Python cross-check on a real-world profile is the
-tier-1 follow-up for this layer.
+(`ccl_chromium_localstorage.py`, `ccl_chromium_sessionstorage.py`). The decode
+layer is now confirmed against a **real Chrome profile** (above), closing the
+"live profile" gap for Local Storage; a full **differential** cross-check against
+`ccl_chromium_reader` (the Python reader) on a large real-world profile remains
+the tier-1 follow-up.
 
 ## Known edge cases not yet validated against an oracle
 
-- **C++/Chromium-authored SSTables** — validated against the `rusty-leveldb`
-  reimplementation, not the reference C++ writer or a live Chrome profile.
+- **C++/Chromium-authored SSTables** — the record *reader* is validated against
+  the `rusty-leveldb` reimplementation. The real-Chrome Local Storage fixture
+  (D13) exercises the **`.log` (WAL) path** written by Chromium's own C++
+  LevelDB, but the small dataset stayed in the memtable/log and produced **no
+  `.ldb` SSTable**, so a *Chromium-authored SSTable* is still not exercised
+  (that needs a larger real profile that has flushed/compacted an L0 table).
 - **Non-Snappy compression** — LevelDB defines only none (0) and Snappy (1); Zstd
   and other types are reported as `UnknownCompression` (with the type byte and
   offset) and skipped loudly, but no such block was exercised.
