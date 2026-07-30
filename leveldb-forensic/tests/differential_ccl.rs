@@ -41,7 +41,7 @@ fn oracle_script() -> PathBuf {
 
 /// Decode two hex nibbles.
 fn unhex(s: &str) -> Vec<u8> {
-    assert!(s.len() % 2 == 0, "odd-length hex from oracle: {s:?}");
+    assert!(s.len().is_multiple_of(2), "odd-length hex from oracle: {s:?}");
     (0..s.len())
         .step_by(2)
         .map(|i| u8::from_str_radix(&s[i..i + 2], 16).expect("valid hex from oracle"))
@@ -121,7 +121,7 @@ fn our_sets(recs: &[LocalStorageRecord]) -> Sets {
                 deleted,
             } => {
                 let k = (origin.clone(), script_key.text.clone());
-                let replace = best.get(&k).map_or(true, |(s, _, _)| *seq > *s);
+                let replace = best.get(&k).is_none_or(|(s, _, _)| *seq > *s);
                 if replace {
                     best.insert(k, (*seq, *deleted, value.text.clone()));
                 }
