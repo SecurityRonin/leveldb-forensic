@@ -6,7 +6,7 @@ license.workspace = true
 # Published library: a deliberately LOW, CI-verified MSRV (a compatibility signal),
 # distinct from the dev toolchain pin in rust-toolchain.toml. Raise only when a
 # newer-Rust feature is genuinely needed.
-rust-version = "1.80"
+rust-version = "1.87"
 readme = "README.md"
 description = "Pure-Rust, read-only, panic-free LevelDB record reader for forensics — enumerates every raw SSTable (.ldb) and WAL (.log) record including tombstones and superseded versions, without taking the LOCK or mutating the directory."
 repository = "https://github.com/SecurityRonin/leveldb-forensic"
