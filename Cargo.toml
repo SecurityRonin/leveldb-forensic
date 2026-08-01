@@ -24,6 +24,8 @@ crc32c = "0.6"
 snap = "1"
 # CLI argument parsing.
 clap = { version = "4", features = ["derive"] }
+# Output sanitization: RFC 4180 CSV quoting + spreadsheet formula guard.
+jsonguard = "0.2"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

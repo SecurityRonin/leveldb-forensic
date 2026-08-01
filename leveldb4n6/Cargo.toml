@@ -24,6 +24,7 @@ path = "src/main.rs"
 leveldb-core = { workspace = true }
 leveldb-forensic = { workspace = true }
 clap = { workspace = true }
+jsonguard = { workspace = true }
 
 [dev-dependencies]
 # Write a real LevelDB directory to drive the CLI end-to-end.
