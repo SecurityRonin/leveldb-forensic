@@ -1,8 +1,12 @@
 //! Rendering of records to the three output formats.
 //!
 //! `text` is a human view (control characters flattened so a record stays on one
-//! line); `jsonl` and `csv` are machine views — faithful and round-trippable
-//! (arbitrary bytes as hex, strings JSON- or CSV-escaped, nothing truncated).
+//! line). `jsonl` is the faithful, round-trippable machine view — arbitrary
+//! bytes as hex, strings JSON-escaped, nothing truncated or altered. `csv` is
+//! the spreadsheet-facing view: values are RFC 4180 quoted and a leading `=`,
+//! `+`, `-` or `@` is neutralized with an apostrophe, because every string here
+//! is carved from evidence and would otherwise execute as a formula when the
+//! examiner opens the file. Use `jsonl` when byte-exactness matters.
 
 use std::fmt::Write as _;
 use std::io::{self, Write};
@@ -41,13 +45,10 @@ fn json_string(s: &str) -> String {
     out
 }
 
-/// Quote a CSV field if it contains a delimiter, quote, or newline.
+/// RFC 4180 quoting plus a spreadsheet formula guard, via the fleet's shared
+/// `jsonguard` sanitizer rather than a local escaper.
 fn csv_field(s: &str) -> String {
-    if s.contains([',', '"', '\n', '\r']) {
-        format!("\"{}\"", s.replace('"', "\"\""))
-    } else {
-        s.to_string()
-    }
+    jsonguard::csv_field(s).value
 }
 
 /// Flatten control characters so a value stays on a single text line.
