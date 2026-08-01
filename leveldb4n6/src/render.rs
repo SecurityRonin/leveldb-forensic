@@ -426,6 +426,63 @@ mod tests {
         String::from_utf8(buf).unwrap()
     }
 
+    /// Every value a carved LevelDB record carries is attacker-controlled: an
+    /// origin, a script key, or a stored value that begins with `=`, `+`, `-`
+    /// or `@` is a live formula the moment the examiner opens the CSV in a
+    /// spreadsheet. The cell must reach the file with the lead-in neutralized.
+    #[test]
+    fn csv_local_storage_neutralizes_formula_lead_ins() {
+        for lead in ['=', '+', '-', '@'] {
+            let payload = format!("{lead}cmd|'/c calc'!A1");
+            let recs = vec![LocalStorageRecord::Data {
+                origin: format!("{lead}HYPERLINK(\"http://evil\")"),
+                script_key: sv(&payload),
+                value: sv(&payload),
+                seq: 1,
+                deleted: false,
+            }];
+            let out = to_string(|w| render_local(&recs, Format::Csv, w));
+            for cell in out.lines().skip(1).flat_map(|l| l.split(',')) {
+                assert!(
+                    !cell.starts_with(lead),
+                    "unguarded formula cell {cell:?} in CSV row: {out}"
+                );
+            }
+            assert!(
+                out.contains(&format!("'{lead}")),
+                "expected apostrophe-guarded lead-in {lead:?} in: {out}"
+            );
+        }
+    }
+
+    /// Session Storage carries the same attacker-controlled surface (guid,
+    /// host, map id, script key, value).
+    #[test]
+    fn csv_session_storage_neutralizes_formula_lead_ins() {
+        for lead in ['=', '+', '-', '@'] {
+            let payload = format!("{lead}cmd|'/c calc'!A1");
+            let recs = vec![SessionStorageRecord::Map {
+                map_id: "7".into(),
+                host: Some(payload.clone()),
+                script_key: payload.clone(),
+                value: sv(&payload),
+                seq: 1,
+                deleted: false,
+            }];
+            let out = to_string(|w| render_session(&recs, Format::Csv, w));
+            for cell in out.lines().skip(1).flat_map(|l| l.split(',')) {
+                assert!(
+                    !cell.starts_with(lead),
+                    "unguarded formula cell {cell:?} in CSV row: {out}"
+                );
+            }
+            assert!(
+                out.contains(&format!("'{lead}")),
+                "expected apostrophe-guarded lead-in {lead:?} in: {out}"
+            );
+        }
+    }
+
     #[test]
     fn render_raw_every_format() {
         let recs = vec![Record {
