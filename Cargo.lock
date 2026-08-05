@@ -242,7 +242,7 @@ checksum = "da69c0e1ea0a8594c077882aa53d25698a10238a47f3beff2fe961c0576bcdc2"
 
 [[package]]
 name = "leveldb-core"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "crc32c",
  "integer-encoding 4.1.0",
@@ -253,7 +253,7 @@ dependencies = [
 
 [[package]]
 name = "leveldb-forensic"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "leveldb-core",
  "protobuf-forensic-core",
@@ -263,7 +263,7 @@ dependencies = [
 
 [[package]]
 name = "leveldb4n6"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "clap",
  "jsonguard",
