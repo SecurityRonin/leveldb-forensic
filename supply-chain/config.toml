@@ -149,10 +149,6 @@ criteria = "safe-to-run"
 version = "1.70.2"
 criteria = "safe-to-deploy"
 
-[[exemptions.protobuf-forensic-core]]
-version = "0.1.0"
-criteria = "safe-to-deploy"
-
 [[exemptions.quote]]
 version = "1.0.46"
 criteria = "safe-to-deploy"
